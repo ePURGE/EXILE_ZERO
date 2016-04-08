@@ -1,0 +1,1 @@
+"-mod=@ExileServer;@CBA_A3;@CUP Vehicles;@CUP Units;@CUP Weapons;@CUP Terrains - Core;@CUP Terrains - Maps;@TRYK's Multi-Play Unifrom's pack;@Napf Island A3;@ExileZero;@Exile;" -servermod=@ASDG_JR;

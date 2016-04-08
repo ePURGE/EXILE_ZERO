@@ -1,0 +1,2 @@
+//new
+7 "" !"NVG_TargetG" !"Shot" !"Exile_Plant_GreenBush" !"Exile_Plant_" !"Exile_Unit_"
