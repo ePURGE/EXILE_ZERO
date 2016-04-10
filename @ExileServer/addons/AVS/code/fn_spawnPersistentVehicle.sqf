@@ -1,0 +1,118 @@
+/*
+© 2015 Zenix Gaming Ops
+Developed by Vishpala
+Co-Developed by Rod-Serling
+
+All rights reserved.
+
+Function:
+	AVS_fnc_spawnPersistentVehicle - Handles creating a single persistent vehicle.
+Usage:
+	[["VehicleClass1", "VehicleClass2"], .5, [4000,4000,0]] call AVS_fnc_spawnPersistentVehicle;
+	Spawns either a "VehicleClass1" or "VehicleClass2" class vehicle with 50% damage at position [4000, 4000, 0]
+Return Value:
+	None
+*/
+
+_uid = _this select 0;
+_classNames = _this select 1;
+_damage = _this select 2;
+_position = _this select 3;
+
+// Sanitize position
+if(count _position isEqualTo 2) then
+{
+	_position pushback 0;
+};
+if(surfaceIsWater _position)exitWith{};
+
+// Randomly select the vehicle type.
+_vehicleClassName =	_classNames select (floor (random (count _classNames)));
+
+// Create the vehicle
+_vehicle = [_vehicleClassName, _position, (random 360), true, AVS_PersistentVehiclesPinCode] call ExileServer_object_vehicle_createPersistentVehicle;
+_vehicle setVariable ["ExileOwnerUID",_uid];
+_vehicle setVariable ["ExileIsLocked",0];
+_vehicle lock 0;
+
+// Set damage
+_hitpoints = _vehicleClassName call ExileClient_util_vehicle_getHitPoints;
+
+{
+	if (typeName _damage isEqualTo "ARRAY") then
+	{
+		
+		_damageMin = (_damage select 0);
+		_damageMax = (_damage select 1);
+		/*
+		_damageDiff = _damageMin - _damageMax;
+		_damageChance = random _damageDiff;
+		_damage = _damageChance + _damageMin;
+		_vehicle setHitPointDamage [_x, _damage];
+		*/
+		
+		/*-------------*/
+		if(["Engine",_x,false] call AVS_fnc_findString) then {
+			if ((random 100) < 80) then	{_vehicle setHitPointDamage [_x, 1];}else{_vehicle setHitPointDamage [_x, random 0.98];};
+		};
+		if(["HRotor",_x,false] call AVS_fnc_findString) then {
+			if ((random 100) < 80) then	{_vehicle setHitPointDamage [_x, 1];}else{_vehicle setHitPointDamage [_x, random 0.98];};
+		};
+		if(["VRotor",_x,false] call AVS_fnc_findString) then {
+			if ((random 100) < 80) then	{_vehicle setHitPointDamage [_x, 1];}else{_vehicle setHitPointDamage [_x, random 0.98];};
+		};
+		if(["Wheel",_x,false] call AVS_fnc_findString) then {
+			if ((random 100) < 80) then	{_vehicle setHitPointDamage [_x, 1];}else{_vehicle setHitPointDamage [_x, random 0.98];};
+		};
+		if(["Track",_x,false] call AVS_fnc_findString) then {
+			if ((random 100) < 80) then	{_vehicle setHitPointDamage [_x, 1];}else{_vehicle setHitPointDamage [_x, random 0.98];};
+		};
+		if(["Glass",_x,false] call AVS_fnc_findString) then {
+			if ((random 100) < 80) then	{_vehicle setHitPointDamage [_x, 1];}else{_vehicle setHitPointDamage [_x, random 0.98];};
+		};
+		if(["Hull",_x,false] call AVS_fnc_findString) then {
+			_vehicle setHitPointDamage [_x, random 0.75];
+		};
+		if(["Avionics",_x,false] call AVS_fnc_findString) then {
+			if ((random 100) < 80) then	{_vehicle setHitPointDamage [_x, 1];}else{_vehicle setHitPointDamage [_x, random 0.98];};
+		};
+		/*-------------*/
+		
+		/*
+		if ((random 100) < 90) then
+		{
+			_vehicle setHitPointDamage [_x, random 0.99];
+		};
+		*/
+	}
+	else
+	{
+		_damage = _damage;
+		_vehicle setHitPointDamage [_x, _damage];
+	};
+} forEach _hitpoints;
+
+if (_vehicle isKindOf "Air") then
+{
+	_vehicle setVehicleAmmoDef (AVS_PersistentVehiclesAmmoPercent / 100);
+	_vehicle setFuel 0;
+}
+else
+{
+	_vehicle setVehicleAmmoDef (AVS_PersistentVehiclesAmmoPercent / 100);
+	_vehicle setFuel (AVS_PersistentVehiclesFuelPercent / 100);
+};
+
+// Add vehicle to database.
+_vehicle call ExileServer_object_vehicle_database_insert;
+_vehicle call ExileServer_object_vehicle_database_update;
+
+diag_log format ["Spawn[%1] - POS: %3 - CLASS: %2", _uid, _vehicleClassName, _position];
+
+// Add a debug marker
+if (AVS_DebugMarkers) then
+{
+	_debugMarker = createMarker ["vehicleMarker#"+str (_position select 0), _position];
+	_debugMarker setMarkerColor "ColorOrange";
+	_debugMarker setMarkerType "mil_dot_noShadow";
+};
